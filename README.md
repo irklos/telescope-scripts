@@ -22,7 +22,7 @@ Other Settings:
 
 Using:
 - copy scripts to /usr/share/indi/scripts/
-- execute comand '/usr/share/indi/scripts/mount.py start' (run python daemon that listen on localhost on port 5555)
+- execute command '/usr/share/indi/scripts/mount.py start' (run python daemon that listen on localhost on port 5555)
 - start indiserver with telescope scripting gateway driver (with indi web manager on port 8624) 
 - run Kstars with Ekos 
 - unpark mount 
