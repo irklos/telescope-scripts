@@ -22,3 +22,10 @@ Using:
 - run Kstars with Ekos 
 - unpark mount 
 - execute some goto scripts
+
+Schematic:
+![Schema](Schematic.png)
+
+ToDo:
+- Park 
+- precised goto
