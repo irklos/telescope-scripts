@@ -14,10 +14,12 @@ GPIO Settings:
 - DECP 22
 - DECN 18
 - POWER 24
+
 Other Settings:
 - self.speed=8 (or 4 )
 - self.observing_location = Warsaw/Poland
 - logfile = /tmp/mount.log
+
 Using:
 - copy scripts to /usr/share/indi/scripts/
 - execute comand /usr/share/indi/scripts/mount.py start 
