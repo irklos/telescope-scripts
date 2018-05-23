@@ -10,13 +10,14 @@ import sys
 import RPi.GPIO as GPIO
 import time
 from socket import *
+from config import *
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.OUT)
-GPIO.output(18, GPIO.HIGH)
+GPIO.setup(DECN, GPIO.OUT)
+GPIO.output(DECN, GPIO.HIGH)
 time.sleep(0.01)
 
-GPIO.output(18, GPIO.LOW)
+GPIO.output(DECN, GPIO.LOW)
 
 s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
 s.connect(('localhost', 5555)) # nawiazanie polaczenia

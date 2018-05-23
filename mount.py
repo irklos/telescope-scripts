@@ -15,6 +15,13 @@ from astropy.time import Time
 from astropy import units as u
 from astropy.coordinates import AltAz
 
+from config import *
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(RAP, GPIO.OUT) # W
+GPIO.setup(RAN, GPIO.OUT) # E ->
+GPIO.setup(DECP, GPIO.OUT) # N
+GPIO.setup(DECN, GPIO.OUT) # S ->
 
 
 class DaemonApp(object):
@@ -23,6 +30,8 @@ class DaemonApp(object):
     def __init__(self):
         """Initialize Daemon."""
 	self.stdin_path = '/dev/null'
+#        self.stdout_path = '/dev/tty'
+#        self.stderr_path = '/dev/tty'
         self.stdout_path = '/dev/null'
         self.stderr_path = '/dev/null'
         self.pidfile_path = '/tmp/daemon.pid'
@@ -45,57 +54,53 @@ class DaemonApp(object):
 	self.s = socket(AF_INET, SOCK_STREAM) 
 
     def step(self):
-	if self.sra > 0: 
-	    GPIO.output(23, GPIO.HIGH) 
-	elif self.sra < 0:
-	    GPIO.output(17, GPIO.HIGH) 
-	if self.flip == 1:
-	    if self.sdec > 0:
-		GPIO.output(22, GPIO.HIGH) 
-	    elif self.sdec <0:
-		GPIO.output(18, GPIO.HIGH)
-	if self.flip == 0:
-	    if self.sdec > 0:
-		GPIO.output(18, GPIO.HIGH) 
-	    elif self.sdec <0:
-		GPIO.output(22, GPIO.HIGH)
+	if self.go==2:
+	    if self.sra > 0: 
+		GPIO.output(RAP, GPIO.HIGH) 
+	    elif self.sra < 0:
+		GPIO.output(RAN, GPIO.HIGH) 
+	    if self.flip == 1:
+		if self.sdec > 0:
+		    GPIO.output(DECP, GPIO.HIGH) 
+		elif self.sdec <0:
+		    GPIO.output(DECN, GPIO.HIGH)
+	    if self.flip == 0:
+		if self.sdec > 0:
+		    GPIO.output(DECN, GPIO.HIGH) 
+		elif self.sdec <0:
+		    GPIO.output(DECP, GPIO.HIGH)
  
-	time.sleep(self.mstep) # 8x - 30  4x - 60 
-	if self.sra > 0: 
-	    GPIO.output(23, GPIO.LOW) 
-	    self.ra=self.ra+0.06666
-	    if self.ra>24 :
-		self.ra=self.ra-24
-	elif self.sra < 0:
-	    GPIO.output(17, GPIO.LOW) 
-	    self.ra=self.ra-0.06666
-	    if self.ra<0 :
-		self.ra=self.ra+24
-	if self.flip == 1:     
-	    if self.sdec > 0: 
-		GPIO.output(22, GPIO.LOW)
-		self.dec=self.dec+1
-	    elif self.sdec <0:
-		GPIO.output(18, GPIO.LOW) 
-		self.dec=self.dec-1
-	elif self.flip == 0 :
-	    if self.sdec > 0: 
-		GPIO.output(18, GPIO.LOW)
-		self.dec=self.dec+1
-	    elif self.sdec <0:
-		GPIO.output(22, GPIO.LOW) 
-		self.dec=self.dec-1
+	    time.sleep(self.mstep) # 8x - 30  4x - 60 
+	    if self.sra > 0: 
+		GPIO.output(RAP, GPIO.LOW) 
+		self.ra=self.ra+0.06666
+		if self.ra>24 :
+		    self.ra=self.ra-24
+	    elif self.sra < 0:
+		GPIO.output(RAN, GPIO.LOW) 
+		self.ra=self.ra-0.06666
+		if self.ra<0 :
+		    self.ra=self.ra+24
+	    if self.flip == 1:     
+		if self.sdec > 0: 
+		    GPIO.output(DECP, GPIO.LOW)
+		    self.dec=self.dec+1
+		elif self.sdec <0:
+		    GPIO.output(DECN, GPIO.LOW) 
+		    self.dec=self.dec-1
+	    elif self.flip == 0 :
+		if self.sdec > 0: 
+		    GPIO.output(DECN, GPIO.LOW)
+		    self.dec=self.dec+1
+		elif self.sdec <0:
+		    GPIO.output(DECP, GPIO.LOW) 
+		    self.dec=self.dec-1
 	    
 
 
 
     def goto(self):
 	
-	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(18, GPIO.OUT) # E
-	GPIO.setup(22, GPIO.OUT) # W ->
-	GPIO.setup(17, GPIO.OUT) # E
-	GPIO.setup(23, GPIO.OUT) # W ->
 
 	difra=float(self.gra)-float(self.ra)
 	if difra>180 :
@@ -151,23 +156,22 @@ class DaemonApp(object):
 	    fslra=0.000022
 	    fsldec=0.000333
 	s = socket(AF_INET, SOCK_STREAM) 
-
 	s.bind(('127.0.0.1', 5555)) #dowiazanie do portu 5555
 	s.listen(5)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s', filename=self.log_file,filemode='a')
 	park=1
 	coord=SkyCoord(ra=self.ra*u.degree, dec=self.dec*u.degree)
         while True:
-	    client,addr = self.s.accept() # odebranie polaczenia
+	    client,addr = s.accept() # odebranie polaczenia
 	    data = client.recv(30)
 	    if not data: break
 	    words = data.split()
 	    cmd=int(words[0])
 	    if self.go==1:
+		self.go=2
 		t = Thread(target=self.goto)
 	        t.start()
 		logging.debug('GOTO DO')
-		self.go=2
 	    if cmd == 0: # unpark
 		park=0
 	    elif cmd == 1: # park
@@ -200,6 +204,13 @@ class DaemonApp(object):
 	    elif cmd == 5: # slew
 		self.ra=self.ra+fslra*int(words[1])
 		self.dec=self.dec+fsldec*int(words[2])
+	    elif cmd == 6: # abort
+		self.go=0
+		GPIO.setmode(GPIO.BCM)
+		GPIO.output(RAP, GPIO.LOW) 
+		GPIO.output(RAN, GPIO.LOW) 
+		GPIO.output(DECP, GPIO.LOW) 
+		GPIO.output(DECN, GPIO.LOW) 
 
 #	    logging.debug(data)
 
