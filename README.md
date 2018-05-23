@@ -9,8 +9,8 @@ Requirements:
 - TLP521-4 for gpio to st-4 converter (http://norikyu.blogspot.com/p/gpio-st-4.html)
 
 GPIO Settings:
-- RAP 23
-- RAN 17
+- RAP 17
+- RAN 23
 - DECP 22
 - DECN 18
 - POWER 24
