@@ -62,7 +62,7 @@ class DaemonApp(object):
  
 	time.sleep(self.mstep) # 8x - 30  4x - 60 
 	if self.sra > 0: 
-	    GPIO.output(18, GPIO.LOW) 
+	    GPIO.output(23, GPIO.LOW) 
 	    self.ra=self.ra+0.06666
 	    if self.ra>24 :
 		self.ra=self.ra-24
