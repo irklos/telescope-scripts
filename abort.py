@@ -10,9 +10,9 @@ import sys
 from socket import *
 
 
-s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
-s.connect(('localhost', 5555)) # nawiazanie polaczenia
-s.send('6') #odbior danych (max 1024 bajow)
+s = socket(AF_INET, SOCK_STREAM) 
+s.connect(('localhost', 5555)) 
+s.send('6') 
 s.close()
 
 

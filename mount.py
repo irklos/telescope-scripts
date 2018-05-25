@@ -162,7 +162,7 @@ class DaemonApp(object):
 	park=1
 	coord=SkyCoord(ra=self.ra*u.degree, dec=self.dec*u.degree)
         while True:
-	    client,addr = s.accept() # odebranie polaczenia
+	    client,addr = s.accept() 
 	    data = client.recv(30)
 	    if not data: break
 	    words = data.split()

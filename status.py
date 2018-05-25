@@ -13,9 +13,9 @@ from socket import *
 script, path = sys.argv
 
 
-s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
-s.connect(('localhost', 5555)) # nawiazanie polaczenia
-s.send('3') #odbior danych (max 1024 bajow)
+s = socket(AF_INET, SOCK_STREAM) 
+s.connect(('localhost', 5555)) 
+s.send('3') 
 data = s.recv(30)
 s.close()
 

@@ -18,9 +18,9 @@ GPIO.output(RAN, GPIO.HIGH)
 time.sleep(0.01)
 GPIO.output(RAN, GPIO.LOW)
 
-s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
-s.connect(('localhost', 5555)) # nawiazanie polaczenia
-s.send('5 -1 0') #odbior danych (max 1024 bajow)
+s = socket(AF_INET, SOCK_STREAM) 
+s.connect(('localhost', 5555)) 
+s.send('5 -1 0') 
 s.close()
 
 

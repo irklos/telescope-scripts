@@ -13,9 +13,9 @@ from socket import *
 
 script, ra, dec = sys.argv
 
-s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
-s.connect(('localhost', 5555)) # nawiazanie polaczenia
-s.send('2 ' + ra + ' ' + dec) #odbior danych (max 1024 bajow)
+s = socket(AF_INET, SOCK_STREAM) 
+s.connect(('localhost', 5555)) 
+s.send('2 ' + ra + ' ' + dec) 
 s.close()
 
 #coordinates = open('/tmp/indi-status', 'w')

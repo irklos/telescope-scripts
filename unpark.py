@@ -11,15 +11,15 @@ import sys
 import RPi.GPIO as GPIO
 import time
 from socket import *
-
+from config import *
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(24, GPIO.OUT)
+GPIO.setup(POWER, GPIO.OUT)
 
-GPIO.output(24, GPIO.HIGH)
+GPIO.output(POWER, GPIO.HIGH)
 
-s = socket(AF_INET, SOCK_STREAM) #utworzenie gniazda
-s.connect(('localhost', 5555)) # nawiazanie polaczenia
-s.send('0') #odbior danych (max 1024 bajow)
+s = socket(AF_INET, SOCK_STREAM) 
+s.connect(('localhost', 5555)) 
+s.send('0') 
 s.close()
 
 
