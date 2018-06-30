@@ -10,12 +10,11 @@ import logging
 from threading import Thread
 import RPi.GPIO as GPIO
 
-from astropy.coordinates import EarthLocation,SkyCoord
-from astropy.time import Time
-from astropy import units as u
-from astropy.coordinates import AltAz
+import ephem
+import numpy as np
 
 from config import *
+
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(RAP, GPIO.OUT) # W
@@ -38,6 +37,7 @@ class DaemonApp(object):
 	self.log_file = '/tmp/mount.log'
         self.pidfile_timeout = 1
 	self.go=0
+	self.ggo=0
 	self.gra=0
 	self.gdec=90
 	self.ra=0
@@ -49,8 +49,8 @@ class DaemonApp(object):
 	self.alt=52.1344805092
 	self.az=0.0331069535695
 	self.observing_location=0
-	self.flip=1
-	
+	self.flip=0
+# 0 for ar 102/600
 	self.s = socket(AF_INET, SOCK_STREAM) 
 
     def step(self):
@@ -147,20 +147,22 @@ class DaemonApp(object):
 
     def run(self):
         """Main Daemon Code."""
-	fslra=0.000011
-	fsldec=0.000166
-	self.observing_location = EarthLocation(lat='52.229676', lon='21.012229', height=100*u.m)
+	fslra=0.00011
+	fsldec=0.00166
+	self.observing_location =  ephem.city('Warsaw')
+
 	
 	if self.speed == 8:
 	    self.mstep=30
-	    fslra=0.000022
-	    fsldec=0.000333
+	    fslra=0.00022
+	    fsldec=0.00333
 	s = socket(AF_INET, SOCK_STREAM) 
+	
 	s.bind(('127.0.0.1', 5555)) #dowiazanie do portu 5555
 	s.listen(5)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s', filename=self.log_file,filemode='a')
 	park=1
-	coord=SkyCoord(ra=self.ra*u.degree, dec=self.dec*u.degree)
+	logging.debug('BEGIN')
         while True:
 	    client,addr = s.accept() 
 	    data = client.recv(30)
@@ -175,32 +177,43 @@ class DaemonApp(object):
 	    if cmd == 0: # unpark
 		park=0
 	    elif cmd == 1: # park
-		observing_time = Time.now()
-		coord = SkyCoord(ra=self.ra*u.degree, dec=self.dec*u.degree,frame='icrs', equinox='J2000')
-		cord_altaz=coord.transform_to(AltAz(obstime=observing_time, location=self.observing_location))
-		self.alt=cord_altaz.alt.deg
-		self.az=cord_altaz.az.deg
+		self.observing_location.date = ephem.now()
+		star = ephem.FixedBody()
+		star._ra=ephem.degrees(str(self.ra))
+		star._dec=ephem.degrees(str(self.dec))
+
+		star.compute(self.observing_location)
+
+		self.alt=star.alt
+		self.az=star.az
 		park=1
 
 	    elif cmd == 2: # goto 
 		self.gra=words[1]
 		self.gdec=words[2]
 		self.go=1
+		self.ggo=1
 		logging.debug('GOTO '+str(self.gra)+' '+str(self.gdec))
 	    elif cmd == 3: # status
 		if park==1:
-			observing_time = Time.now()
-			newAltAzcoordiantes = SkyCoord(alt = self.alt*u.deg, az = self.az*u.deg, obstime = observing_time, frame = 'altaz',location=self.observing_location)
-			logging.debug(str(newAltAzcoordiantes.icrs.ra)+ ' '+ str(newAltAzcoordiantes.icrs.dec) )
-
-			self.ra=newAltAzcoordiantes.icrs.ra.deg
-			self.dec=newAltAzcoordiantes.icrs.dec.deg
+			self.observing_location.date = '2018/06/28 11:46:45.12'
+# ephem.now()
+			rra,ddec= self.observing_location.radec_of(self.az, self.alt)
+			self.ra=np.degrees(rra)
+			self.dec=np.degrees(ddec)
+#			logging.debug('PARK '+str(self.observing_location.date)+' '+str(np.degrees(rra))+' '+str(np.degrees(ddec))+' '+str(self.ra))
+#			logging.debug('STATUS '+str(self.ra)+' '+str(self.dec))
 		client.send(str(park)+' '+str(self.ra) + ' ' + str(self.dec))
-#		    logging.debug(str(park)+' '+str(self.ra) + ' ' + str(self.dec))
-		    
+
 	    elif cmd == 4: # sync
 		self.ra=float(words[1])
 		self.dec=float(words[2])
+		if self.ggo==1:
+			logging.debug('FLIP '+str(abs(float(self.gdec)-self.dec)))
+			if abs(float(self.gdec)-self.dec) > 2. :
+			    self.flip=self.flip^1
+			    logging.debug('FLIP '+str(self.flip))
+		        self.ggo=0
 	    elif cmd == 5: # slew
 		self.ra=self.ra+fslra*int(words[1])
 		self.dec=self.dec+fsldec*int(words[2])
