@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Mount.py</title>
+	<!--
+		VirtualSky <canvas> application
+		(c) 2010 Stuart Lowe (Las Cumbras Observatory Global Telescope)
+	-->
+    <link rel="stylesheet" type="text/css" media="screen" href="extra/prettify.css">
+ <link rel="stylesheet" href="/assets/css/normalize.min.css">
+	<!--[if lt IE 9]><script src="excanvas.min.js"></script><![endif]-->
+	<script src="stuquery.js"></script>
+	<script src="virtualsky.js" type="text/javascript"></script>
+	<script src="extra/prettify.js" type="text/javascript"></script>
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> -->
+  <script language="JavaScript" src="js/jquery.min.js"></script>
+  <script language="JavaScript" src="js/AjaxLongPoller.js"></script>
+    <script type="text/javascript" src="js/on-off-switch.js"></script>
+    <script type="text/javascript" src="js/on-off-switch-onload.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/on-off-switch.css"/>
+    <link href="css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="cssterm.css"/>
+
+
+
+ 
+<script>
+
+function deg_to_dms (deg) {
+   var d = Math.floor (deg);
+   var minfloat = (deg-d)*60;
+   var m = Math.floor(minfloat);
+   var secfloat = (minfloat-m)*60;
+   var s = Math.round(secfloat);
+   // After rounding, the seconds might become 60. These two
+   // if-tests are not necessary if no rounding is done.
+   if (s==60) {
+     m++;
+     s=0;
+   }
+   if (m==60) {
+     d++;
+     m=0;
+   }
+   return ("" + d + ":" + m + ":" + s);
+}
+
+function deg_to_hms (deg) {
+   var h = Math.floor (deg/15);
+   var minfloat = ((deg-(h*15))/15)*60;
+   var m = Math.floor(minfloat);
+   var secfloat = (minfloat-m)*60;
+   var s = Math.round(secfloat);
+   // After rounding, the seconds might become 60. These two
+   // if-tests are not necessary if no rounding is done.
+   if (s==60) {
+     m++;
+     s=0;
+   }
+   if (m==60) {
+     h++;
+     m=0;
+   }
+   return ("" + h + ":" + m + ":" + s);
+}
+
+
+var var1 = 83.8220792;
+var var2 = -5.3911111;
+var var3 = 0; 
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/test_status.php?val=ra",
+
+   async: false,
+   success: function(my_var1) {var1=parseFloat(my_var1*15); }
+
+});
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/test_status.php?val=dec",
+
+   async: false,
+   success: function(my_var2) {var2=parseFloat(my_var2); }
+
+});
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/status.php",
+
+   async: false,
+   success: function(my_var3) {var3=parseInt(my_var3); }
+
+});
+
+
+  
+//$.get("http://raspberrypi.lan/test_status.php?val=dec", function( my_var2 ) {
+//var2=parseFloat(my_var2);
+//});
+
+
+	S(document).ready(function() {
+
+		// Set up the prettification of code blocks
+		prettyPrint();
+
+
+		var vs = S.virtualsky({
+id:'starmap',
+projection:'gnomic',
+gridlines_eq:true,
+constellations:true,
+constellationlabels:true,
+constellationboundaries:true,
+objects: 'messier.json',
+latitude: 52.229676,
+longitude: 21.012229,
+ra: var1,
+dec: var2
+//live:true
+});
+
+
+        vs.addPointer1({
+                'ra':var1,
+                'dec':var2,
+                'label':'Telescope',
+                'colour':'rgb(255,0,0)'
+        })
+
+document.getElementById("pozycja").innerText = ' Ra: ' + deg_to_hms(var1) + ' Dec: ' + deg_to_dms(var2)  ;
+
+
+
+//   S('button#moveit').on('click',function(){
+//                vs.panTo(var1,var2,3000)
+//        });
+
+
+if ( var3 == 2)
+{
+$('#starmap').hide();
+$('#myonoffswitch').removeAttr('checked');
+$('#pozycja').hide();
+
+}
+
+else 
+
+{
+$('#myonoffswitch').attr('checked', true);
+
+}
+
+
+ $(".onoffswitch-checkbox").click(function(){
+if ($('#myonoffswitch').is(':checked'))
+{
+	$('#starmap').show();
+	$('#sr').show();
+	$('#pozycja').show();
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/start.php",
+
+   async: false,
+
+});
+history.go(0);
+
+}
+else
+{
+	$('#starmap').hide();
+	$('#sr').hide();
+	$('#pozycja').hide();
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/stop.php",
+
+   async: false,
+
+});
+history.go(0);
+
+}
+    });
+
+ $(".onoffswitch-checkbox1").click(function(){
+if ($('#myonoffswitch1').is(':checked'))
+{
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/unpark.php",
+
+   async: false,
+
+});
+	$('#sr').show();
+
+}
+else
+{
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/park.php",
+
+   async: false,
+
+});
+	$('#sr').hide();
+
+}
+    });
+
+
+	});
+
+
+
+	</script>
+</head>
+<body  bgcolor="#efeddf" id=body>
+
+
+<div style="width:944x;height:80px;">
+
+
+
+<div style="width:100px;float:left; ">
+    <div class="onoffswitch" >
+        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+        <label class="onoffswitch-label" for="myonoffswitch">
+            <span class="onoffswitch-inner"></span>
+            <span class="onoffswitch-switch"></span>
+        </label>
+    </div>
+</div>
+<div style="width:100px;float:left;">
+    <div class="onoffswitch1" >
+        <input type="checkbox" name="onoffswitch1" class="onoffswitch-checkbox1" id="myonoffswitch1" >
+        <label class="onoffswitch-label1" for="myonoffswitch1">
+            <span class="onoffswitch-inner1"></span>
+            <span class="onoffswitch-switch1"></span>
+        </label>
+    </div>
+</div>
+
+<div style="float:left">
+<a href="https://raspberrypi.lan/mediawiki/index.php/Strona_g%C5%82%C3%B3wna" target="_blank"><img src="MediaWiki.png" ></a>
+<a href="http://www.12dstring.me.uk/fovcalc.php"><img src="123dstring.png" target="_blank"></a>
+<a href="https://pl.sat24.com/pl"><img src="sat24.jpg" target="_blank"></a> 
+</div>
+<div id="pozycja" style="float:right;font-weight: bold;color:red;">
+</div>
+
+
+</div>
+	<div class="content">
+			<div id="starmap" class="planetarium" style="width:944x;height:400px;"></div>
+<!--<button id="moveit">Move to The Telescope</button> -->
+</div>
+<div>
+ <div id="tail_window" class="cssterm" style="width:40%;float:left;positon:absolute"> 
+  </div>
+<div >
+<iframe id="sr"  name="sr" src="sr.html" frameBorder="0" style="width:30%;height:250px;float:left;"></iframe>
+</div>
+</div>
+
+<iframe name="letters" src="" frameBorder="0" style="background-color: white; width:100%;height:550px;float:left;"></iframe>
+</div>
+<script language="JavaScript"  type="text/javascript">
+document.getElementsByName("letters")[0].src="http://"+location.hostname+":8624";
+</script>  
+
+
+
+
+</body>
+</html>
+

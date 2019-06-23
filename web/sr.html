@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html>
+
+<html>
+
+ <head>
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <style>
+
+
+
+  #result {
+
+   position: absolute;
+
+   width: 100%;
+
+   max-width:200px;
+
+   cursor: pointer;
+
+   overflow-y: auto;
+
+   max-height: 200px;
+
+   box-sizing: border-box;
+
+   z-index: 1001;
+
+  }
+
+  .link-class:hover{
+
+   background-color:#f1f1f1;
+
+  }
+
+  </style>
+
+ </head>
+
+ <body bgcolor="#efeddf">
+
+
+  <div class="container" >
+
+
+
+   <div align="center">
+
+    <input type="text" name="search" id="search" placeholder="Go To" class="form-control" autocomplete="off" />
+
+   </div>
+
+   <ul class="list-group" id="result"></ul>
+
+   <br />
+<div id="rysunek" style="float:right;"></div> 
+  </div>
+
+ </body>
+
+</html>
+
+
+
+<script>
+function deg_to_dms (deg) {
+   var d = Math.floor (deg);
+   var minfloat = (deg-d)*60;
+   var m = Math.floor(minfloat);
+   var secfloat = (minfloat-m)*60;
+   var s = Math.round(secfloat);
+   // After rounding, the seconds might become 60. These two
+   // if-tests are not necessary if no rounding is done.
+   if (s==60) {
+     m++;
+     s=0;
+   }
+   if (m==60) {
+     d++;
+     m=0;
+   }
+   return ("" + d + ":" + m + ":" + s);
+}
+
+function deg_to_hms (deg) {
+   var h = Math.floor (deg/15);
+   var minfloat = ((deg-(h*15))/15)*60;
+   var m = Math.floor(minfloat);
+   var secfloat = (minfloat-m)*60;
+   var s = Math.round(secfloat);
+   // After rounding, the seconds might become 60. These two
+   // if-tests are not necessary if no rounding is done.
+   if (s==60) {
+     m++;
+     s=0;
+   }
+   if (m==60) {
+     h++;
+     m=0;
+   }
+   return ("" + h + ":" + m + ":" + s);
+}
+
+
+
+
+
+$(document).ready(function(){
+
+ $.ajaxSetup({ cache: false });
+
+ $('#search').keyup(function(){
+
+  $('#result').html('');
+
+  $('#state').val('');
+
+  var searchField = $('#search').val();
+
+  var expression = new RegExp(searchField, "i");
+
+  $.getJSON('messier.json', function(data) {
+
+
+   $.each(data, function(key, value){
+
+    if (value.target.name.search(expression) != -1 )
+
+    {
+
+     $('#result').append('<li class="list-group-item link-class"> '+value.target.name+'  </span><div style="display:none;">|'+value.ra.decimal+' | '+value.dec.decimal+' </div></li>');
+    }
+
+   });   
+
+  });
+
+ });
+
+ 
+
+ $('#result').on('click', 'li', function() {
+
+  var click_text = $(this).text().split('|');
+
+  $('#search').val($.trim(click_text[0]));
+
+
+$("#result").html("target " +click_text[0] + "</br> ra= "+deg_to_hms(click_text[1])+"</br> dec= "+deg_to_dms(click_text[2]));
+$("#rysunek").html("<img style=\"float:right;\" height=\"70%\" width=\"70%\"  src=\"http://server7.sky-map.org/imgcut?survey=DSS2&w=64&h=64&ra="+(click_text[1]/15)+"&de="+click_text[2]+"&angle=0.25&output=PNG\"   />");
+var ra1=click_text[1].replace( /\s/g, '')
+var dec1=click_text[2].replace( /\s/g, '')
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/test_goto.php?ra="+(ra1/15)+"&dec="+dec1,
+
+   async: false,
+
+});
+
+
+ });
+
+});
+
+</script>
+
+
+
