@@ -21,6 +21,7 @@ GPIO.setup(RAP, GPIO.OUT) # W
 GPIO.setup(RAN, GPIO.OUT) # E ->
 GPIO.setup(DECP, GPIO.OUT) # N
 GPIO.setup(DECN, GPIO.OUT) # S ->
+GPIO.setup(POWER, GPIO.OUT) # S ->
 
 
 class DaemonApp(object):
@@ -34,7 +35,7 @@ class DaemonApp(object):
         self.stdout_path = '/dev/null'
         self.stderr_path = '/dev/null'
         self.pidfile_path = '/tmp/daemon.pid'
-	self.log_file = '/tmp/mount.log'
+	self.log_file = '/var/log/mount.log'
         self.pidfile_timeout = 1
 	self.go=0
 	self.ggo=0
@@ -103,10 +104,10 @@ class DaemonApp(object):
 	
 
 	difra=float(self.gra)-float(self.ra)
-	if difra>180 :
-	    difra=float(self.gra)-float(self.ra+360)
-	elif difra < -180 :
-	    difra=float(self.gra)+360-float(self.ra)
+	if difra>12 :
+	    difra=float(self.gra)-float(self.ra+24)
+	elif difra < -12 :
+	    difra=float(self.gra)+24-float(self.ra)
  	difdec=float(self.gdec)-float(self.dec)
 	rasteps=int(abs(difra)*15) # to degrees
 	decsteps=int(abs(difdec))
@@ -149,9 +150,9 @@ class DaemonApp(object):
         """Main Daemon Code."""
 	fslra=0.00011
 	fsldec=0.00166
+	self.observing_location = ephem.Observer();
 	self.observing_location =  ephem.city('Warsaw')
-
-	
+	self.observing_location.pressure = 0
 	if self.speed == 8:
 	    self.mstep=30
 	    fslra=0.00022
@@ -166,6 +167,7 @@ class DaemonApp(object):
         while True:
 	    client,addr = s.accept() 
 	    data = client.recv(30)
+#	    logging.debug(data)
 	    if not data: break
 	    words = data.split()
 	    cmd=int(words[0])
@@ -176,10 +178,12 @@ class DaemonApp(object):
 		logging.debug('GOTO DO')
 	    if cmd == 0: # unpark
 		park=0
+		logging.debug('UNPARK DO')
 	    elif cmd == 1: # park
+		logging.debug('PARK DO')
 		self.observing_location.date = ephem.now()
 		star = ephem.FixedBody()
-		star._ra=ephem.degrees(str(self.ra))
+		star._ra=ephem.degrees(str(self.ra*15))
 		star._dec=ephem.degrees(str(self.dec))
 
 		star.compute(self.observing_location)
@@ -196,18 +200,23 @@ class DaemonApp(object):
 		logging.debug('GOTO '+str(self.gra)+' '+str(self.gdec))
 	    elif cmd == 3: # status
 		if park==1:
-			self.observing_location.date = '2018/06/28 11:46:45.12'
-# ephem.now()
+			self.observing_location.date =  ephem.now()
 			rra,ddec= self.observing_location.radec_of(self.az, self.alt)
-			self.ra=np.degrees(rra)
+			self.ra=np.degrees(rra)/15
 			self.dec=np.degrees(ddec)
+#			logging.debug(self.observing_location.date)
 #			logging.debug('PARK '+str(self.observing_location.date)+' '+str(np.degrees(rra))+' '+str(np.degrees(ddec))+' '+str(self.ra))
-#			logging.debug('STATUS '+str(self.ra)+' '+str(self.dec))
+#			logging.debug('STATUS '+str(self.az)+' '+str(self.alt))
+		time.sleep(1)
+#		logging.debug('STATUS '+str(self.ra)+' '+str(self.dec))
+
 		client.send(str(park)+' '+str(self.ra) + ' ' + str(self.dec))
 
 	    elif cmd == 4: # sync
 		self.ra=float(words[1])
 		self.dec=float(words[2])
+		logging.debug('SYNC '+str(self.ra)+' '+str(self.dec))
+
 		if self.ggo==1:
 			logging.debug('FLIP '+str(abs(float(self.gdec)-self.dec)))
 			if abs(float(self.gdec)-self.dec) > 2. :
