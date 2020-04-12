@@ -39,4 +39,6 @@ Addons:
 - Focuser (GPIO: IN1=10, IN2=9, IN3=25, IN4=27) based on 28BYJ-48 stepper motor and uln2003 driver 
 - Web interface of mount driver based on virtualsky
 Web gui screen:
+
+
 ![Gui](Screen.png)
