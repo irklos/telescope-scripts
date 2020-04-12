@@ -12,9 +12,29 @@ import RPi.GPIO as GPIO
 
 import ephem
 import numpy as np
+from datetime import datetime
+from datetime import timedelta
 
 from config import *
+#from display import *
 
+from time import sleep
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_SSD1306
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+import subprocess
+
+SSD1306_DISPLAYALLON = 0xA5
+SSD1306_NORMALDISPLAY = 0xA6
+SSD1306_INVERTDISPLAY = 0xA7
+SSD1306_DISPLAYOFF = 0xAE
+
+RST = None     # on the PiOLED this pin isnt used
+DC = 23
+SPI_PORT = 0
+SPI_DEVICE = 0
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(RAP, GPIO.OUT) # W
@@ -51,6 +71,34 @@ class DaemonApp(object):
 	self.az=0.0331069535695
 	self.observing_location=0
 	self.flip=0
+	self.disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
+	self.disp.begin()
+
+	self.disp.clear()
+	self.disp.display()
+
+	self.width = self.disp.width
+	self.height = self.disp.height
+	self.image = Image.new('1', (self.width, self.height))
+
+	self.draw = ImageDraw.Draw(self.image)
+
+	self.draw.rectangle((0,0,self.width,self.height), outline=0, fill=0)
+	padding = -2
+	top = padding
+	bottom = self.height-padding
+	x = 0
+	self.font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf',20)
+	self.draw.rectangle((0,0,self.width,self.height), outline=0, fill=0)
+	cmd = "hostname -I | cut -d\' \' -f1"
+	IP = subprocess.check_output(cmd, shell = True )
+	self.draw.text((x, top),       "Mount.py",  font=self.font, fill=255)
+	self.draw.text((x, top+26),    str(IP), font=self.font, fill=255)
+	self.disp.image(self.image)
+	self.disp.display()
+
+
+
 # 0 for ar 102/600
 	self.s = socket(AF_INET, SOCK_STREAM) 
 
@@ -117,9 +165,12 @@ class DaemonApp(object):
 	else:
 	    comsteps=rasteps
 	if self.speed==4:
-	    logging.debug('Liczba minut (GOTO)  '+str (comsteps+difsteps) )
+	    nextTime = datetime.now() + timedelta(minutes = comsteps+difsteps+1)
+	    logging.debug('Liczba minut (GOTO)  '+str (comsteps+difsteps)+" ("+ nextTime.strftime( "%H:%M)") )
 	if self.speed==8:
-	    logging.debug('Liczba minut (GOTO)  '+str ((comsteps+difsteps)/2) )
+	    nextTime = datetime.now() + timedelta(minutes = (comsteps+difsteps+1)/2)
+
+	    logging.debug('Liczba minut (GOTO)  '+str ((comsteps+difsteps)/2)+" ("+ nextTime.strftime("%H:%M)") )
 
 	if difra > 0:
 	    self.sra=1
@@ -178,8 +229,14 @@ class DaemonApp(object):
 		logging.debug('GOTO DO')
 	    if cmd == 0: # unpark
 		park=0
+#		self.draw.rectangle((0,0,self.width,self.height), outline=0, fill=0)
+#		self.draw.text((0, 6),     "ALAAmA",  font=self.font, fill=255)
+#		self.disp.image(self.image)
+#		self.disp.display()
+
 		logging.debug('UNPARK DO')
 	    elif cmd == 1: # park
+		
 		logging.debug('PARK DO')
 		self.observing_location.date = ephem.now()
 		star = ephem.FixedBody()
@@ -239,6 +296,10 @@ class DaemonApp(object):
 	    client.close()
     def __del__(self):
 	 logging.debug("End")
+	
+	 self.disp.clear()
+	 self.disp.display()
+#	 self.disp.command(Adafruit_SSD1306.SSD1306_DISPLAYOFF)
 #	 self.s.close()
 if __name__ == '__main__':
     app = DaemonApp()

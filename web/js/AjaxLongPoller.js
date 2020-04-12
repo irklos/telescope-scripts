@@ -25,7 +25,7 @@ function connectToServer(linenum) {
 				}
 				//console.log("Count "+count);
         		        var loglines = data.loglines;
-        		//        loglines.reverse();
+        		        loglines.reverse();
         		        var l = 0;
         		        $.each( loglines, function( key, val ) {
                         		l = l+1;
@@ -34,7 +34,7 @@ function connectToServer(linenum) {
                 		});// end each
 
 		                var newlines = items.join( "" );
-        		        $("#tail_window").append(newlines);
+        		        $("#tail_window").prepend(newlines);
 
 		                connectToServer(count);
 

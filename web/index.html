@@ -20,7 +20,7 @@
     <script type="text/javascript" src="js/on-off-switch-onload.js"></script>
     <link rel="stylesheet" type="text/css" href="css/on-off-switch.css"/>
     <link href="css/jquerysctipttop.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="cssterm.css"/>
+    <link rel="stylesheet" type="text/css" href="test.css"/>
 
 
 
@@ -69,6 +69,7 @@ function deg_to_hms (deg) {
 var var1 = 83.8220792;
 var var2 = -5.3911111;
 var var3 = 0; 
+var park = 0;
 
 $.ajax({
 
@@ -100,6 +101,17 @@ $.ajax({
 
    async: false,
    success: function(my_var3) {var3=parseInt(my_var3); }
+
+});
+
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/test_status.php?val=park",
+
+   async: false,
+   success: function(my_var3) {park=parseInt(my_var3); }
 
 });
 
@@ -147,12 +159,52 @@ document.getElementById("pozycja").innerText = ' Ra: ' + deg_to_hms(var1) + ' De
 //                vs.panTo(var1,var2,3000)
 //        });
 
+  $(".Image").click(function(){
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/motor_test.php",
+
+   async: false,
+
+});
+
+ })
+;
+  $(".Image1").click(function(){
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/solve_qhy.php",
+
+   async: false,
+
+});
+   });
+
+
+  $(".Image2").click(function(){
+$.ajax({
+
+   type: "GET",
+
+   url: "http://raspberrypi.lan/restart.php",
+
+   async: false,
+
+});
+
+    
+   });
 
 if ( var3 == 2)
 {
 $('#starmap').hide();
 $('#myonoffswitch').removeAttr('checked');
 $('#pozycja').hide();
+$('#tools').show();
 
 }
 
@@ -161,7 +213,30 @@ else
 {
 $('#myonoffswitch').attr('checked', true);
 
+
+
+if ( park == 1)
+{
+$('#starmap').hide();
+$('#myonoffswitch1').removeAttr('checked');
+$('#pozycja').hide();
+$('#tools').hide();
+
+
 }
+
+else 
+
+{
+$('#myonoffswitch1').attr('checked', true);
+	$('#starmap').show();
+	$('#sr').show();
+	$('#pozycja').show();
+	$('#tools').show();
+
+}
+}
+
 
 
  $(".onoffswitch-checkbox").click(function(){
@@ -170,6 +245,8 @@ if ($('#myonoffswitch').is(':checked'))
 	$('#starmap').show();
 	$('#sr').show();
 	$('#pozycja').show();
+	$('#tools').show();
+
 
 $.ajax({
 
@@ -188,6 +265,7 @@ else
 	$('#starmap').hide();
 	$('#sr').hide();
 	$('#pozycja').hide();
+	$('#tools').hide();
 
 $.ajax({
 
@@ -234,6 +312,8 @@ $.ajax({
 	$('#sr').hide();
 
 }
+history.go(0);
+
     });
 
 
@@ -269,23 +349,39 @@ $.ajax({
     </div>
 </div>
 
-<div style="float:left">
-<a href="https://raspberrypi.lan/mediawiki/index.php/Strona_g%C5%82%C3%B3wna" target="_blank"><img src="MediaWiki.png" ></a>
-<a href="http://www.12dstring.me.uk/fovcalc.php"><img src="123dstring.png" target="_blank"></a>
-<a href="https://pl.sat24.com/pl"><img src="sat24.jpg" target="_blank"></a> 
+<div>
+<a href="http://www.12dstring.me.uk/fovcalc.php" target="_blank"><img src="12dstring.ico"  alt="12dstring" style="height:34px;position:absolute;"></a>
+<a href="https://pl.sat24.com/pl" target="_blank"><img src="sat24.ico"  alt="sat24" style="height:34px;position:relative;float:left;margin-left: 10px;" ></a> 
+<a href="https://raspberrypi.lan/mediawiki/index.php/Projekt_GoTo"  target="_blank"><img src="media.ico" alt="MediaWiki" style="height:36px;position:relative;float:left" ></a>
+
 </div>
 <div id="pozycja" style="float:right;font-weight: bold;color:red;">
 </div>
 
 
 </div>
-	<div class="content">
-			<div id="starmap" class="planetarium" style="width:944x;height:400px;"></div>
+	<div class="content" style="height:210px;">
+			<div id="starmap" class="planetarium" style="width:95%;height:400px;float:left;"></div>
 <!--<button id="moveit">Move to The Telescope</button> -->
+<div id="tools">
+<a href=#><img class="Image" src="usta1.svg" style="width:5%;height:100px;float:left;position:absolute;"  /></a>
+<a href=#><img class="Image1" src="target.svg" style="width:5%;height:100px;clear:left;position:relative;top:110px;" /></a>
+<a href=#><img class="Image2" src="restart.svg" style="width:5%;height:100px;clear:left;position:relative;top:110px;" /></a>
+
+</div>
+
 </div>
 <div>
- <div id="tail_window" class="cssterm" style="width:40%;float:left;positon:absolute"> 
+ <div  style="width:60%;float:left;positon:absolute"> 
+
+<div class="shell-wrap">
+  <p class="shell-top-bar">/var/log/mount.log</p>
+  <div class="shell-body" id="tail_window">
   </div>
+</div>
+
+  
+</div>
 <div >
 <iframe id="sr"  name="sr" src="sr.html" frameBorder="0" style="width:30%;height:250px;float:left;"></iframe>
 </div>

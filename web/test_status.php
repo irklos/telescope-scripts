@@ -29,6 +29,9 @@ if ($_GET['val']=='ra')
 echo $array[1];
 if ($_GET['val']=='dec')
 echo $array[2];
+if ($_GET['val']=='park')
+echo $array[0];
+
 }
 
 //echo " planetarium.addPointer({

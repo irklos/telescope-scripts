@@ -58,7 +58,7 @@
         display: block; width: 200%; margin-left: -100%;
         transition: margin 0.3s ease-in 0s;
     }
-    .onoffswitch-inner1:before, .onoffswitch-inner:after {
+    .onoffswitch-inner1:before, .onoffswitch-inner1:after {
         display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
         font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
         box-sizing: border-box;
@@ -69,7 +69,7 @@
         background-color: #34A7C1; color: #FFFFFF;
     }
     .onoffswitch-inner1:after {
-        content: "PARK";
+        content: "  PARK";
         padding-right: 10px;
         background-color: #EEEEEE; color: #999999;
         text-align: right;
