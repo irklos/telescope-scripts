@@ -18,7 +18,7 @@ GPIO Settings:
 Other Settings:
 - self.speed=8 (or 4 )
 - self.observing_location = Warsaw/Poland
-- logfile = /tmp/mount.log
+- logfile = /var/log/mount.log
 
 Using:
 - copy scripts to /usr/share/indi/scripts/
@@ -41,6 +41,7 @@ Addons:
 - Motor test (Web)
 - QHY Resolve and capture script (Web)
 - Reboot system (Web)
+- added some I2c lcd 128x64 staff
 
 
 Web gui screen:
