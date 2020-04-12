@@ -15,7 +15,7 @@ from config import *
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(DECN, GPIO.OUT)
 GPIO.output(DECN, GPIO.HIGH)
-time.sleep(5)
+time.sleep(0.01)
 
 GPIO.output(DECN, GPIO.LOW)
 
