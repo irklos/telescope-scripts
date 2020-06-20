@@ -144,6 +144,48 @@ class DaemonApp(object):
 		elif self.sdec <0:
 		    GPIO.output(DECP, GPIO.LOW) 
 		    self.dec=self.dec-1
+    def m_step(self):
+	if self.go==2:
+	    if self.sra > 0: 
+		GPIO.output(RAP, GPIO.HIGH) 
+	    elif self.sra < 0:
+		GPIO.output(RAN, GPIO.HIGH) 
+	    if self.flip == 1:
+		if self.sdec > 0:
+		    GPIO.output(DECP, GPIO.HIGH) 
+		elif self.sdec <0:
+		    GPIO.output(DECN, GPIO.HIGH)
+	    if self.flip == 0:
+		if self.sdec > 0:
+		    GPIO.output(DECN, GPIO.HIGH) 
+		elif self.sdec <0:
+		    GPIO.output(DECP, GPIO.HIGH)
+ 
+	    time.sleep(self.mstep/10) # 8x - 30  4x - 60 
+	    if self.sra > 0: 
+		GPIO.output(RAP, GPIO.LOW) 
+		self.ra=self.ra+0.006666
+		if self.ra>24 :
+		    self.ra=self.ra-24
+	    elif self.sra < 0:
+		GPIO.output(RAN, GPIO.LOW) 
+		self.ra=self.ra-0.006666
+		if self.ra<0 :
+		    self.ra=self.ra+24
+	    if self.flip == 1:     
+		if self.sdec > 0: 
+		    GPIO.output(DECP, GPIO.LOW)
+		    self.dec=self.dec+0.1
+		elif self.sdec <0:
+		    GPIO.output(DECN, GPIO.LOW) 
+		    self.dec=self.dec-0.1
+	    elif self.flip == 0 :
+		if self.sdec > 0: 
+		    GPIO.output(DECN, GPIO.LOW)
+		    self.dec=self.dec+0.1
+		elif self.sdec <0:
+		    GPIO.output(DECP, GPIO.LOW) 
+		    self.dec=self.dec-0.1
 	    
 
 
@@ -191,6 +233,40 @@ class DaemonApp(object):
 
 	for x in range (0,difsteps):
 	    self.step()
+
+	difra=float(self.gra)-float(self.ra)
+	if difra>12 :
+	    difra=float(self.gra)-float(self.ra+24)
+	elif difra < -12 :
+	    difra=float(self.gra)+24-float(self.ra)
+ 	difdec=float(self.gdec)-float(self.dec)
+	rasteps=int(10*abs(difra)*15) # to tithing_degrees
+	decsteps=int(abs(10*difdec))
+	difsteps=abs(rasteps-decsteps)
+	if rasteps > decsteps:
+	    comsteps=decsteps
+	else:
+	    comsteps=rasteps
+	if difra > 0:
+	    self.sra=1
+	elif difra < 0:
+	    self.sra=-1
+
+	if difdec > 0:
+	    self.sdec=1
+	elif difdec < 0:
+	    self.sdec=-1
+	
+	for x in range (0,comsteps):
+	    self.m_step()
+	if rasteps > decsteps:
+	    self.sdec=0
+	else:
+	    self.sra=0
+
+	for x in range (0,difsteps):
+	    self.m_step()
+
 	self.sra=0
 	self.sdec=0
 	self.go=0
