@@ -161,31 +161,31 @@ class DaemonApp(object):
 		elif self.sdec <0:
 		    GPIO.output(DECP, GPIO.HIGH)
  
-	    time.sleep(self.mstep/10) # 8x - 30  4x - 60 
+	    time.sleep(self.mstep/100) # 8x - 30  4x - 60 
 	    if self.sra > 0: 
 		GPIO.output(RAP, GPIO.LOW) 
-		self.ra=self.ra+0.006666
+		self.ra=self.ra+0.0006666
 		if self.ra>24 :
 		    self.ra=self.ra-24
 	    elif self.sra < 0:
 		GPIO.output(RAN, GPIO.LOW) 
-		self.ra=self.ra-0.006666
+		self.ra=self.ra-0.0006666
 		if self.ra<0 :
 		    self.ra=self.ra+24
 	    if self.flip == 1:     
 		if self.sdec > 0: 
 		    GPIO.output(DECP, GPIO.LOW)
-		    self.dec=self.dec+0.1
+		    self.dec=self.dec+0.01
 		elif self.sdec <0:
 		    GPIO.output(DECN, GPIO.LOW) 
-		    self.dec=self.dec-0.1
+		    self.dec=self.dec-0.01
 	    elif self.flip == 0 :
 		if self.sdec > 0: 
 		    GPIO.output(DECN, GPIO.LOW)
-		    self.dec=self.dec+0.1
+		    self.dec=self.dec+0.01
 		elif self.sdec <0:
 		    GPIO.output(DECP, GPIO.LOW) 
-		    self.dec=self.dec-0.1
+		    self.dec=self.dec-0.01
 	    
 
 
@@ -240,8 +240,8 @@ class DaemonApp(object):
 	elif difra < -12 :
 	    difra=float(self.gra)+24-float(self.ra)
  	difdec=float(self.gdec)-float(self.dec)
-	rasteps=int(10*abs(difra)*15) # to tithing_degrees
-	decsteps=int(abs(10*difdec))
+	rasteps=int(100*abs(difra)*15) # to tithing_degrees
+	decsteps=int(abs(100*difdec))
 	difsteps=abs(rasteps-decsteps)
 	if rasteps > decsteps:
 	    comsteps=decsteps
