@@ -15,7 +15,7 @@ from config import *
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(RAP, GPIO.OUT)
 GPIO.output(RAP, GPIO.HIGH)
-time.sleep(0.01)
+time.sleep(0.1)
 
 GPIO.output(RAP, GPIO.LOW)
 

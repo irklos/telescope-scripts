@@ -3165,6 +3165,32 @@ VirtualSky.prototype.addPointer1 = function(input){
 	return (this.pointers.length);
 }
 
+VirtualSky.prototype.updatePointer1 = function(input){
+	// Check if we've already added this
+	var style,url,img,label,credit;
+	var matched = -1;
+	var p;
+	for(var i = 0 ; i < this.pointers.length ; i++){
+		if( this.pointers[i].label == input.label) matched = i;
+	}
+	// Hasn't been added already
+	this.pointers.splice(matched,1);    
+	input.ra *= 1;	// Correct for a bug
+	input.dec *= 1;
+	i = this.pointers.length;
+	p = input;
+	
+	p.d = is(p.d, "number")?p.d:10;
+	if(typeof p.html !== "string"){
+	style = p.style || "width:128px;height:128px;";
+	}
+	this.pointers[i] = p;
+
+	this.updateClock(new Date());
+	this.draw();
+	return (this.pointers.length);
+}
+
 
 
 VirtualSky.prototype.changeAzimuth = function(inc){

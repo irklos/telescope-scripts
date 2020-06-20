@@ -15,7 +15,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(RAN, GPIO.OUT)
 
 GPIO.output(RAN, GPIO.HIGH)
-time.sleep(0.01)
+time.sleep(0.1)
 GPIO.output(RAN, GPIO.LOW)
 
 s = socket(AF_INET, SOCK_STREAM) 
